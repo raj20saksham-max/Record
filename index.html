@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal | Admin Dashboard</title>
+    <style>
+        :root {
+            --sidebar: #1e293b;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --bg: #f1f5f9;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; background: var(--bg); height: 100vh; color: #334155; }
+
+        /* Sidebar */
+        nav { width: 260px; background: var(--sidebar); color: white; position: fixed; height: 100%; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .nav-header { padding: 30px 20px; border-bottom: 1px solid #334155; text-align: center; font-size: 1.2rem; font-weight: bold; }
+        nav ul { list-style: none; padding: 20px 0; margin: 0; }
+        nav li { padding: 15px 25px; color: #94a3b8; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        nav li:hover, nav li.active { color: white; background: #334155; border-left: 4px solid var(--primary); }
+
+        /* Main Content */
+        main { margin-left: 260px; padding: 30px 50px; width: calc(100% - 260px); overflow-y: auto; }
+
+        /* Header Bar */
+        .header-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 40px; 
+            background: white; 
+            padding: 20px 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .title-section h1 { margin: 0; font-size: 1.8rem; color: var(--sidebar); }
+
+        .search-container { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; /* Icon aur Box ke beech ka gap */
+        width: 400px;
+    }
+
+    .search-icon {
+        font-size: 1.4rem;
+        color: var(--primary);
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .search-container input { 
+        flex: 1;
+        padding: 12px 20px; 
+        border-radius: 12px; 
+        border: 2px solid #e2e8f0; 
+        outline: none; 
+        font-size: 0.95rem;
+        transition: 0.3s all;
+        background: white;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .search-container input:focus { 
+        border-color: var(--primary); 
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); 
+    }
+
+        /* Stats Cards */
+        .stats-grid { display: flex; gap: 25px; margin-bottom: 35px; }
+        .stat-card { background: white; padding: 25px; border-radius: 15px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
+        .stat-card::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 5px; background: var(--primary); }
+        .topper-card::after { background: var(--success); }
+        .stat-card p { margin: 12px 0 0; font-size: 1.7rem; font-weight: 700; color: var(--sidebar); }
+
+        /* Cards and Tables */
+        .content-card { background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .form-row { display: flex; gap: 15px; margin-top: 15px; }
+        input[type="text"], input[type="number"] { padding: 12px 18px; border: 1px solid #cbd5e1; border-radius: 10px; flex: 1; outline: none; }
+        
+        button { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .sort-btn { background: #64748b; font-size: 0.85rem; margin-left: 10px;}
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; background: #f8fafc; color: #475569; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; }
+
+        #searchResults { border: 2px solid var(--primary); background: #f0f7ff; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-header">ADMIN PORTAL</div>
+        <ul>
+            <li class="active">📊 Dashboard</li>
+            <li onclick="document.getElementById('nameInput').focus()">➕ Add Student</li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="header-bar">
+            <div class="title-section">
+                <h1>Student Management</h1>
+                <p>Academic Session: 2026</p>
+            </div>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="Search by Name or Roll...">
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4>Total Registered</h4>
+                <p id="totalCount">0</p>
+            </div>
+            <div class="stat-card topper-card">
+                <h4>Top Performer</h4>
+                <p id="topperName">N/A</p>
+            </div>
+        </div>
+
+        <div id="searchResults" class="content-card" style="display:none;">
+            <h3 style="margin:0; color:var(--primary)">🔍 Results Found</h3>
+            <table id="searchTable">
+                <thead><tr><th>Roll</th><th>Name</th><th>Marks</th><th>Status</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="content-card">
+            <h3>Add New Student Record</h3>
+            <div class="form-row">
+                <input type="text" id="nameInput" placeholder="Full Name">
+                <input type="number" id="rollInput" placeholder="Roll No">
+                <input type="number" id="marksInput" placeholder="Marks (%)">
+                <button onclick="handleAdd()">Add Record</button>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Student Directory</h3>
+                <div>
+                    <button class="sort-btn" onclick="sortRecords('marks')">Sort by Marks</button>
+                    <button class="sort-btn" onclick="sortRecords('roll')">Sort by Roll</button>
+                    <button style="background:#ef4444; margin-left:10px;" onclick="clearAllData()">Reset All</button>
+                </div>
+            </div>
+            <table id="dataTable">
+                <thead><tr><th>Roll</th><th>Name</th><th>Marks</th><th>Result</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        let students = JSON.parse(localStorage.getItem('studentData')) || [];
+
+        window.onload = updateUI;
+
+        function handleAdd() {
+            const name = document.getElementById('nameInput').value.trim();
+            const roll = document.getElementById('rollInput').value;
+            const marks = document.getElementById('marksInput').value;
+
+            if (!name || !roll || !marks) {
+                alert("Sari details bhariye bhai!");
+                return;
+            }
+
+            students.push({ name, roll: parseInt(roll), marks: parseFloat(marks) });
+            saveData();
+            updateUI();
+            
+            document.getElementById('nameInput').value = '';
+            document.getElementById('rollInput').value = '';
+            document.getElementById('marksInput').value = '';
+        }
+
+        function updateUI() {
+            const tbody = document.querySelector("#dataTable tbody");
+            tbody.innerHTML = "";
+            students.forEach(s => {
+                tbody.innerHTML += `<tr>
+                    <td>#${s.roll}</td>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.marks}%</td>
+                    <td>${s.marks >= 40 ? '✅ Pass' : '❌ Fail'}</td>
+                </tr>`;
+            });
+            document.getElementById('totalCount').innerText = students.length;
+            findTopper();
+        }
+
+        function findTopper() {
+            if (students.length === 0) {
+                document.getElementById('topperName').innerText = "N/A";
+                return;
+            }
+            let topper = students.reduce((max, s) => s.marks > max.marks ? s : max, students[0]);
+            document.getElementById('topperName').innerText = `${topper.name} (${topper.marks}%)`;
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const resultsPanel = document.getElementById('searchResults');
+            const searchTbody = document.querySelector("#searchTable tbody");
+
+            if (query === "") {
+                resultsPanel.style.display = "none";
+                return;
+            }
+
+            const filtered = students.filter(s => 
+                s.name.toLowerCase().includes(query) || s.roll.toString() === query
+            );
+
+            searchTbody.innerHTML = "";
+            resultsPanel.style.display = "block";
+
+            if (filtered.length > 0) {
+                filtered.forEach(s => {
+                    searchTbody.innerHTML += `<tr><td>#${s.roll}</td><td>${s.name}</td><td>${s.marks}%</td><td>Found</td></tr>`;
+                });
+            } else {
+                searchTbody.innerHTML = "<tr><td colspan='4'>Record not found.</td></tr>";
+            }
+        }
+
+        function sortRecords(type) {
+            if (type === 'marks') students.sort((a, b) => b.marks - a.marks);
+            else students.sort((a, b) => a.roll - b.roll);
+            saveData();
+            updateUI();
+        }
+
+        function saveData() { localStorage.setItem('studentData', JSON.stringify(students)); }
+
+        function clearAllData() {
+            if(confirm("Delete all?")) {
+                students = [];
+                localStorage.removeItem('studentData');
+                updateUI();
+            }
+        }
+    </script>
+</body>
+</html>
